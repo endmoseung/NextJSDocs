@@ -39,3 +39,71 @@ Route Groups를 통해 생성되어야 할 페이지와 아닌 페이지를 구�
 ## dynamic Routes
 dynamic Routing은 [id] or [slug]로 가능하다.
 
+## UI Loading and Streaming
+### Loading
+layout과 마찬가지로 loading.tsx가 최상단에 있을경우 rootLoading이 되고, 폴더내에 있을경우 부분적으로 적용이되며 root를 덮는다.<br>
+<img width="662" alt="image" src="https://github.com/endmoseung/NextJSDocs/assets/103626175/80ff5efd-c54c-4171-a857-eb0e54bdef48">
+<br>
+### Streaming
+**스트리밍을 사용하면 페이지의 HTML을 더 작은 청크로 분해**하고 해당 청크를 서버에서 클라이언트로 점진적으로 보낼 수 있습니다.<br>
+<img width="643" alt="image" src="https://github.com/endmoseung/NextJSDocs/assets/103626175/a36039f2-77a5-4c1b-b828-caad36d6ac2f"> 
+<br>
+아래처럼 suspense를 넣어서 Streaming을 동작하고 수동으로 loading을 적용할 수 있다.
+
+```tsx
+import { Suspense } from 'react'
+import { PostFeed, Weather } from './Components'
+ 
+export default function Posts() {
+  return (
+    <section>
+      <Suspense fallback={<p>Loading feed...</p>}>
+        <PostFeed />
+      </Suspense>
+      <Suspense fallback={<p>Loading weather...</p>}>
+        <Weather />
+      </Suspense>
+    </section>
+  )
+}
+```
+
+## Error handling
+아래처럼 Error handling이 가능하다. error컴포넌트는 무조건 client 컴포넌틀가 돼야한다.<br>
+
+
+```tsx
+'use client' // Error components must be Client Components
+ 
+import { useEffect } from 'react'
+ 
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error
+  reset: () => void
+}) {
+  useEffect(() => {
+    // Log the error to an error reporting service
+    console.error(error)
+  }, [error])
+ 
+  return (
+    <div>
+      <h2>Something went wrong!</h2>
+      <button
+        onClick={
+          // Attempt to recover by trying to re-render the segment
+          () => reset()
+        }
+      >
+        Try again
+      </button>
+    </div>
+  )
+}
+```
+### nesting
+loading과 layout과 같이 nesting이 적용되지만 rootError도 적용하고 싶다면 루트 디렉터리에 있는 error.js호출 의 변형을 사용해야한다 ``.app/global-error.jsapp``<br>
+
